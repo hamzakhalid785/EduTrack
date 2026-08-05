@@ -21,9 +21,8 @@ function EditStudent() {
         setName(response.data.name);
 
         setEmail(response.data.email);
-
     }
-
+  
     const handleSubmit=async(e)=>{
         e.preventDefault();
 
