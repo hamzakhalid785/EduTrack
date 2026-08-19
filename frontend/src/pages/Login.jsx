@@ -1,53 +1,132 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import api from "../services/api";
 
 function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const navigate = useNavigate();
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-x1 shadow-lg w-96">
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-                <h1 className="text-3x1 font-bold text-center text-blue-600">EduTrack</h1>
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-                <p className="text-center text-gray-500 mt-2">Student Management System</p>
+  const navigate = useNavigate();
 
-                <form
-                className="mt-6"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    navigate("/dashboard");
-                }}
-                >
-                    <input 
-                    type="email"
-                    placeholder="Enter Email"
-                    className="w-full border p-3 rounded-lg mb-4"
-                    value={email}
-                    onChange={(e) => 
-                    setEmail(e.target.value)}
-                    />
 
-                    <input 
-                    type="password"
-                    placeholder="Enter Password"
-                    className="w-full border p-3 rounded-lg mb-4"
-                    value={password}
-                    onChange={(e) => 
-                    setPassword(e.target.value)}
-                    />
+  const handleSubmit = async (e) => {
 
-                    <button className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
-                        Login
-                    </button>
+    e.preventDefault();
 
-                </form>
+    setError("");
+    setLoading(true);
 
+    try {
+
+      const response = await api.post("token/", {
+        username,
+        password,
+      });
+
+
+      localStorage.setItem(
+        "accessToken",
+        response.data.access
+      );
+
+      localStorage.setItem(
+        "refreshToken",
+        response.data.refresh
+      );
+
+
+      navigate("/dashboard");
+
+    } catch (error) {
+
+      console.log(error);
+
+      setError(
+        "Invalid username or password."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
+
+
+  return (
+    <>
+      <Navbar />
+
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+
+        <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-8">
+
+          <h1 className="text-3xl font-bold text-gray-800 text-center">
+            Welcome Back
+          </h1>
+
+          <p className="text-gray-500 text-center mt-2 mb-8">
+            Login to your EduTrack account
+          </p>
+
+
+          {error && (
+            <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-5">
+              {error}
             </div>
+          )}
+
+
+          <form onSubmit={handleSubmit}>
+
+            <label className="block text-gray-700 font-medium mb-2">
+              Username
+            </label>
+
+            <input
+              type="text"
+              placeholder="Enter username"
+              className="border border-gray-300 p-3 rounded-lg w-full mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+
+
+            <label className="block text-gray-700 font-medium mb-2">
+              Password
+            </label>
+
+            <input
+              type="password"
+              placeholder="Enter password"
+              className="border border-gray-300 p-3 rounded-lg w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-lg font-semibold"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+
+          </form>
+
         </div>
-    );
+
+      </div>
+    </>
+  );
 }
 
 export default Login;

@@ -1,69 +1,83 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import Navbar from "../components/Navbar";
+import StudentForm from "../components/StudentForm";
 import api from "../services/api";
 
+
 function AddStudent() {
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-        await api.post("students/", {
-      name,
-      email,
-    });
 
-    navigate("/students");
-} catch (error) {
-    console.log(error.response.data)
-}
+  const handleSubmit = async (formData) => {
+    try {
+
+      await api.post(
+        "students/",
+        formData
+      );
+
+      navigate("/students");
+
+    } catch (error) {
+
+      console.log(error);
+
+      if (
+        error.response?.data?.email
+      ) {
+        alert(
+          "A student with this email already exists."
+        );
+      } else {
+        alert(
+          "Unable to add student."
+        );
+      }
+    }
   };
+
 
   return (
     <>
       <Navbar />
 
-      <div className="p-8">
+      <main className="min-h-screen bg-gray-100 p-6 md:p-8">
 
-        <h1 className="text-3xl font-bold mb-5">
-          Add Student
-        </h1>
+        <div className="max-w-3xl mx-auto">
 
-        <form onSubmit={handleSubmit}>
-
-          <input
-            type="text"
-            placeholder="Student Name"
-            className="border p-3 w-full mb-4 rounded"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <input
-            type="email"
-            placeholder="Student Email"
-            className="border p-3 w-full mb-4 rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-5 py-2 rounded"
+          <Link
+            to="/students"
+            className="text-blue-600 hover:text-blue-800 font-medium"
           >
-            Save Student
-          </button>
+            ← Back to Students
+          </Link>
 
-        </form>
 
-      </div>
+          <div className="mt-5 mb-6">
+
+            <h1 className="text-3xl font-bold text-gray-800">
+              Add Student
+            </h1>
+
+            <p className="text-gray-500 mt-1">
+              Register a new student in EduTrack.
+            </p>
+
+          </div>
+
+
+          <StudentForm
+            onSubmit={handleSubmit}
+            buttonText="Add Student"
+          />
+
+        </div>
+
+      </main>
     </>
   );
 }
+
 
 export default AddStudent;

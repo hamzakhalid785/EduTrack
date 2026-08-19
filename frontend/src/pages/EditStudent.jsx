@@ -1,82 +1,141 @@
-import {useState,useEffect} from "react";
-import {useFetcher, useNavigate,useParams} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
 import Navbar from "../components/Navbar";
+import StudentForm from "../components/StudentForm";
 import api from "../services/api";
 
+
 function EditStudent() {
-    const {id}=useParams();
-    const[name,setName]=useState("");
-    const[email, setEmail]=useState("");
-    const navigate=useNavigate();
+  const { id } = useParams();
 
-    useEffect(()=>{
-        fetchStudent();
-    },[]);
+  const navigate = useNavigate();
 
-    const fetchStudent=async()=>{
+  const [student, setStudent] =
+    useState(null);
 
-        const response=await
-        api.get(`students/${id}/`);
+  const [loading, setLoading] =
+    useState(true);
 
-        setName(response.data.name);
 
-        setEmail(response.data.email);
+  useEffect(() => {
+
+    const loadStudent = async () => {
+
+      try {
+
+        const response =
+          await api.get(
+            `students/${id}/`
+          );
+
+        setStudent(response.data);
+
+      } catch (error) {
+
+        console.log(error);
+
+        alert(
+          "Unable to load student."
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+
+    loadStudent();
+
+  }, [id]);
+
+
+  const handleSubmit = async (
+    formData
+  ) => {
+
+    try {
+
+      await api.put(
+        `students/${id}/`,
+        formData
+      );
+
+      navigate("/students");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        "Unable to update student."
+      );
+
     }
-  
-    const handleSubmit=async(e)=>{
-        e.preventDefault();
 
-        await api.put(`students/${id}/`,{
-            name,
-            email
+  };
 
-        });
-        navigate("/students");
 
-    }
-
-return(
+  return (
     <>
-    <Navbar />
+      <Navbar />
 
-<div className="p-8">
+      <main className="min-h-screen bg-gray-100 p-6 md:p-8">
 
-<h1 className="text-3xl font-bold mb-5">
-Edit Student
-</h1>
+        <div className="max-w-3xl mx-auto">
 
-<form onSubmit={handleSubmit}>
-
-          <input
-            type="text"
-            placeholder="Student Name"
-            className="border p-3 w-full mb-4 rounded"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <input
-            type="email"
-            placeholder="Student Email"
-            className="border p-3 w-full mb-4 rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-5 py-2 rounded"
+          <Link
+            to="/students"
+            className="text-blue-600 hover:text-blue-800 font-medium"
           >
-            Save Student
-          </button>
+            ← Back to Students
+          </Link>
 
-        </form>
 
-</div>
-</>
+          <div className="mt-5 mb-6">
 
-)
+            <h1 className="text-3xl font-bold text-gray-800">
+              Edit Student
+            </h1>
 
+            <p className="text-gray-500 mt-1">
+              Update student information.
+            </p>
+
+          </div>
+
+
+          {loading ? (
+
+            <div className="bg-white rounded-2xl shadow-sm p-12 text-center text-gray-500">
+              Loading student...
+            </div>
+
+          ) : student ? (
+
+            <StudentForm
+              initialData={student}
+              onSubmit={handleSubmit}
+              buttonText="Update Student"
+            />
+
+          ) : (
+
+            <div className="bg-white rounded-2xl p-12 text-center">
+              Student not found.
+            </div>
+
+          )}
+
+        </div>
+
+      </main>
+    </>
+  );
 }
+
 
 export default EditStudent;
